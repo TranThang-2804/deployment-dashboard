@@ -1,0 +1,62 @@
+# Node.js (Next.js specific)
+node_modules/
+.next/
+out/
+build/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.local
+.env.*.local
+
+# Log files
+logs
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+.DS_Store
+coverage/
+
+# Next.js static files
+/public/static/*
+!/public/static/.keep
+
+# Go specific
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Vendor directory (if using Go modules)
+vendor/
+
+# Go test binaries
+*.test
+
+# Go workspace settings
+go.work
+go.work.sum
+
+# Cache and output
+*.log
+*.prof
+*.tmp
+
+# IDE and Editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+Thumbs.db
+*.DS_Store
