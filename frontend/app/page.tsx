@@ -12,7 +12,7 @@ export default function Home() {
   const [events, setEvents] = useState<DeploymentEvent[]>([]);
 
   useEffect(() => {
-    const backendUrl = "localhost:8080";
+    const backendUrl = "http://localhost:8080";
     const eventSource = new EventSource(`${backendUrl}/deployments`);
 
     eventSource.onmessage = (event) => {
@@ -43,7 +43,7 @@ export default function Home() {
         <div>
           <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
             {events.map((event, index) => (
-              <li key={event.name}>{event.status}</li>
+              <li key={index}>{event.name} - {event.status}</li>
             ))}
           </ol>
         </div>

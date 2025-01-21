@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/rs/cors"
 	appsv1 "k8s.io/api/apps/v1" // Import apps/v1 for Deployment resources
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -106,6 +105,19 @@ func handleDeployments(clientset *kubernetes.Clientset) http.HandlerFunc {
 	}
 }
 
+func withCORS(next http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		next.ServeHTTP(w, r)
+	}
+}
+
 func main() {
 	clientset, err := getKubernetesClient()
 	if err != nil {
@@ -115,12 +127,10 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/deployments", handleDeployments(clientset))
 
-	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-	}).Handler(mux)
+	corsMux := withCORS(mux)
 
 	log.Println("Starting server on :8080...")
-	if err := http.ListenAndServe(":8080", corsHandler); err != nil {
+	if err := http.ListenAndServe(":8080", corsMux); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }
