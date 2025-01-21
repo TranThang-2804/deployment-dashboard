@@ -2,19 +2,26 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
+
 	appsv1 "k8s.io/api/apps/v1" // Import apps/v1 for Deployment resources
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"path/filepath"
 	"k8s.io/client-go/informers"
 )
+
+type DeploymentEvent struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
+}
 
 func getKubernetesClient() (*kubernetes.Clientset, error) {
 	// Determine kubeconfig path
@@ -59,20 +66,32 @@ func handleDeployments(clientset *kubernetes.Clientset) http.HandlerFunc {
 		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				deployment := obj.(*appsv1.Deployment)
-				message := fmt.Sprintf("ADDED: %s/%s\n", deployment.Namespace, deployment.Name)
-				fmt.Fprintf(w, "data: %s\n\n", message)
+				event := DeploymentEvent{
+					Name:   deployment.Name,
+					Status: "ADDED",
+				}
+				data, _ := json.Marshal(event)
+				fmt.Fprintf(w, "data: %s\n\n", data)
 				w.(http.Flusher).Flush()
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				deployment := newObj.(*appsv1.Deployment)
-				message := fmt.Sprintf("UPDATED: %s/%s\n", deployment.Namespace, deployment.Name)
-				fmt.Fprintf(w, "data: %s\n\n", message)
+				event := DeploymentEvent{
+					Name:   deployment.Name,
+					Status: "UPDATED",
+				}
+				data, _ := json.Marshal(event)
+				fmt.Fprintf(w, "data: %s\n\n", data)
 				w.(http.Flusher).Flush()
 			},
 			DeleteFunc: func(obj interface{}) {
 				deployment := obj.(*appsv1.Deployment)
-				message := fmt.Sprintf("DELETED: %s/%s\n", deployment.Namespace, deployment.Name)
-				fmt.Fprintf(w, "data: %s\n\n", message)
+				event := DeploymentEvent{
+					Name:   deployment.Name,
+					Status: "DELETED",
+				}
+				data, _ := json.Marshal(event)
+				fmt.Fprintf(w, "data: %s\n\n", data)
 				w.(http.Flusher).Flush()
 			},
 		})

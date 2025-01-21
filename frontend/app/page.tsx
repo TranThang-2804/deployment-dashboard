@@ -17,11 +17,12 @@ export default function Home() {
 
     eventSource.onmessage = (event) => {
       const newEvent: DeploymentEvent = JSON.parse(event.data);
+      console.log(event.data)
       setEvents((prevEvents) => [...prevEvents, newEvent]);
     };
 
-    eventSource.onerror = () => {
-      console.error('Error connecting to SSE endpoint.');
+    eventSource.onerror = (e) => {
+      console.error('Error connecting to SSE endpoint.', e);
       eventSource.close();
     };
 
