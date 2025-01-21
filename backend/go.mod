@@ -3,7 +3,6 @@ module github.com/TranThang-2804/deployment-dashboard/backend
 go 1.23.4
 
 require (
-	github.com/rs/cors v1.11.1
 	k8s.io/api v0.32.1
 	k8s.io/client-go v0.32.1
 )

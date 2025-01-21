@@ -1,0 +1,16 @@
+version: '3'
+tasks:
+  install:
+    desc: "install library"
+    cmds:
+      - which go &> /dev/null || echo "install go first"
+      - which node &> /dev/null || echo "install node first"
+      - which yarn &> /dev/null || echo "install yarn first"
+      - cd {{.ROOT_DIR}}/frontend && yarn install
+      - cd {{.ROOT_DIR}}/backend && go mod tidy
+
+  run:
+    desc: "Run the application"
+    cmds:
+      - cd {{.ROOT_DIR}}/backend && go run ./main.go > /dev/null 2>&1 &
+      - cd {{.ROOT_DIR}}/frontend && yarn run dev
