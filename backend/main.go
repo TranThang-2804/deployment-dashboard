@@ -10,12 +10,13 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/rs/cors"
 	appsv1 "k8s.io/api/apps/v1" // Import apps/v1 for Deployment resources
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"k8s.io/client-go/informers"
 )
 
 type DeploymentEvent struct {
@@ -111,10 +112,14 @@ func main() {
 		log.Fatalf("Error creating Kubernetes client: %v", err)
 	}
 
-	http.HandleFunc("/deployments", handleDeployments(clientset))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/deployments", handleDeployments(clientset))
+
+	// Allow CORS from everywhere
+	handler := cors.Default().Handler(mux)
 
 	log.Println("Starting server on :8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", handler); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }
