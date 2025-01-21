@@ -12,17 +12,26 @@ export default function Home() {
   const [events, setEvents] = useState<DeploymentEvent[]>([]);
 
   useEffect(() => {
-    const backendUrl = "http://localhost:8080";
-    const eventSource = new EventSource(`${backendUrl}/deployments`);
+    const eventSource = new EventSource("http://localhost:8080/deployments");
 
     eventSource.onmessage = (event) => {
       const newEvent: DeploymentEvent = JSON.parse(event.data);
-      console.log(event.data)
-      setEvents((prevEvents) => [...prevEvents, newEvent]);
+      setEvents((prevEvents) => {
+        const existingEventIndex = prevEvents.findIndex(e => e.name === newEvent.name);
+        if (existingEventIndex !== -1) {
+          // Update the status of the existing event
+          const updatedEvents = [...prevEvents];
+          updatedEvents[existingEventIndex].status = newEvent.status;
+          return updatedEvents;
+        } else {
+          // Add the new event
+          return [...prevEvents, newEvent];
+        }
+      });
     };
 
-    eventSource.onerror = (e) => {
-      console.error('Error connecting to SSE endpoint.', e);
+    eventSource.onerror = (error) => {
+      console.error("EventSource failed:", error);
       eventSource.close();
     };
 
@@ -36,18 +45,14 @@ export default function Home() {
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
         <div className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
           <div className="mb-2">
-            Realtime list of deployment{" "}
-            .
+            Realtime list of deployments:
           </div>
-        </div>
-        <div>
-          <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+          <ol>
             {events.map((event, index) => (
               <li key={index}>{event.name} - {event.status}</li>
             ))}
           </ol>
         </div>
-
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a
