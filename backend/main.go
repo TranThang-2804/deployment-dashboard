@@ -115,11 +115,12 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/deployments", handleDeployments(clientset))
 
-	// Allow CORS from everywhere
-	handler := cors.Default().Handler(mux)
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+	}).Handler(mux)
 
 	log.Println("Starting server on :8080...")
-	if err := http.ListenAndServe(":8080", handler); err != nil {
+	if err := http.ListenAndServe(":8080", corsHandler); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }
